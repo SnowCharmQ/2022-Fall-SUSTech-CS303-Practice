@@ -1,4 +1,5 @@
 import math
+from collections import deque
 from queue import Queue
 from math import sqrt
 from utils.logger import logger
@@ -46,6 +47,33 @@ class ProblemSolvingAgent:
 
     def DFS(self, obstacles, start_pos, goal_pos):
         path, visited = [], []
+        parents = dict()
+
+        stack = deque()
+        stack.append(start_pos)
+
+        pos = None
+        visited.append(start_pos)
+
+        while stack:
+            pos = stack.pop()
+            neighbours = self.neighbours_of(obstacles, pos)
+            neighbours = list(neighbours)
+            for neighbour in neighbours:
+                if neighbour[0] not in visited:
+                    stack.append(neighbour[0])
+                    visited.append(neighbour[0])
+                    parents[neighbour[0]] = pos
+
+        assert pos is not None
+        path.append(goal_pos)
+        while True:
+            if pos == start_pos:
+                path.reverse()
+                break
+            parent = parents[pos]
+            path.append(parent)
+            pos = parent
 
         return path, visited
 
