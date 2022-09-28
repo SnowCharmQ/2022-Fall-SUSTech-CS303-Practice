@@ -1,3 +1,4 @@
+import heapq
 import math
 from collections import deque
 from queue import Queue
@@ -112,6 +113,41 @@ class ProblemSolvingAgent:
 
     def UCS(self, obstacles, start_pos, goal_pos):
         path, visited = [], []
+        parents, dis = {}, {}
+
+        heap = []
+        dis[start_pos] = 0.0
+
+        heapq.heappush(heap, (0.0, start_pos))
+        while len(heap) > 0:
+            item = heapq.heappop(heap)
+            if item[1] == goal_pos:
+                break
+            if item[0] != dis[item[1]]:
+                continue
+            neighbors = self.neighbours_of(obstacles, item[1])
+            neighbors = list(neighbors)
+            for neighbor in neighbors:
+                if neighbor[0] not in visited:
+                    visited.append(neighbor[0])
+                    if neighbor[0] not in dis:
+                        dis[neighbor[0]] = item[0] + neighbor[1]
+                        parents[neighbor[0]] = item[1]
+                        heapq.heappush(heap, (dis[neighbor[0]], neighbor[0]))
+                    elif item[0] + neighbor[1] < dis[neighbor[0]]:
+                        dis[neighbor[0]] = item[0] + neighbor[1]
+                        parents[neighbor[0]] = item[1]
+                        heapq.heappush(heap, (dis[neighbor[0]], neighbor[0]))
+
+        path.append(goal_pos)
+        pos = goal_pos
+        while True:
+            if pos == start_pos:
+                path.reverse()
+                break
+            parent = parents[pos]
+            path.append(parent)
+            pos = parent
 
         return path, visited
 
