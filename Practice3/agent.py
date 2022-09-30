@@ -41,7 +41,7 @@ class ProblemSolvingAgent:
         logger.info(f'The agent starts using {algorithm} for searching. ')
         time_controller.start_to_time()
         index = ProblemSolvingAgent.algorithm_indexes[algorithm]
-        path, visited = [self.DFS, self.BFS, self.UCS][index](obstacles, start_pos, goal_pos)
+        path, visited = [self.DFS, self.BFS, self.UCS, self.GBFS, self.Astar][index](obstacles, start_pos, goal_pos)
         logger.info(f'The agent successfully searched a path! ')
         logger.info(f'Agent finishes after {time_controller.get_time_used()}s of computing. ')
         return path, visited
@@ -130,12 +130,49 @@ class ProblemSolvingAgent:
             for neighbor in neighbors:
                 if neighbor[0] not in visited:
                     visited.append(neighbor[0])
-                    if neighbor[0] not in dis:
+                    if neighbor[0] not in dis or item[0] + neighbor[1] < dis[neighbor[0]]:
                         dis[neighbor[0]] = item[0] + neighbor[1]
                         parents[neighbor[0]] = item[1]
                         heapq.heappush(heap, (dis[neighbor[0]], neighbor[0]))
-                    elif item[0] + neighbor[1] < dis[neighbor[0]]:
-                        dis[neighbor[0]] = item[0] + neighbor[1]
+
+        path.append(goal_pos)
+        pos = goal_pos
+        while True:
+            if pos == start_pos:
+                path.reverse()
+                break
+            parent = parents[pos]
+            path.append(parent)
+            pos = parent
+
+        return path, visited
+
+    def GBFS(self, obstacles, start_pos, goal_pos):
+        path, visited = [], []
+
+        return path, visited
+
+    def Astar(self, obstacles, start_pos, goal_pos):
+        path, visited = [], []
+        parents, dis = {}, {}
+
+        heap = []
+        f_start = self.euclidean_distance(start_pos, goal_pos)
+        dis[start_pos] = f_start
+
+        heapq.heappush(heap, (f_start, start_pos))
+        while len(heap) > 0:
+            item = heapq.heappop(heap)
+            if item[1] == goal_pos:
+                break
+            neighbors = self.neighbours_of(obstacles, item[1])
+            neighbors = list(neighbors)
+            for neighbor in neighbors:
+                if neighbor[0] not in visited:
+                    visited.append(neighbor[0])
+                    if neighbor[0] not in dis or \
+                            item[0] + neighbor[1] + self.euclidean_distance(neighbor[0], goal_pos) < dis[neighbor[0]]:
+                        dis[neighbor[0]] = item[0] + neighbor[1] + self.euclidean_distance(neighbor[0], goal_pos)
                         parents[neighbor[0]] = item[1]
                         heapq.heappush(heap, (dis[neighbor[0]], neighbor[0]))
 
